@@ -1,0 +1,44 @@
+# ============================================
+# 主配置 - 只放全局设置与默认值
+# 各流程已拆分到 config/flows/ 目录
+# ============================================
+#
+# 字段说明：
+#   device.uri          设备连接地址（Android:///<adb地址>）
+#   output.*            输出文件与截图目录
+#   defaults.*          所有步骤的默认参数（步骤内可覆盖）
+#   active_flow         当前激活的流程名（对应 config/flows/<name>.yaml）
+#   flows_dir           流程目录
+# ============================================
+
+device:
+  uri: "Android:///192.168.31.33:44415"
+
+output:
+  json_filename: "ocr_result.json"
+  query_json_filename: "query_result.json"
+  base_dir: "截屏"
+
+# ------------------------------------------------------------
+# 全局默认值
+#   retry            OCR 查找失败时的重试次数
+#   retry_interval   每次重试之间的间隔（秒）
+#   interval         通用动作间隔（点击间隔 / 循环间隔，秒）
+#   exact            文本匹配是否精确匹配（true=完全相等）
+#   sleep            每个步骤执行后的休眠（秒）
+#   enabled          步骤是否启用
+# ------------------------------------------------------------
+defaults:
+  retry: 3
+  retry_interval: 1.0
+  interval: 0.5
+  exact: true
+  sleep: 0.1
+  enabled: true
+
+# 当前激活的流程名（对应 config/flows/<name>.yaml）
+active_flow: "邮箱领取"
+#active_flow: "将领技能升级"
+
+# 流程目录
+flows_dir: "config/flows"

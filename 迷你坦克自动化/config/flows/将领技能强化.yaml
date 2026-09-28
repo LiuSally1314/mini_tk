@@ -1,0 +1,75 @@
+# ============================================
+# 流程：将领技能强化
+#
+# 对技能 1~6 依次执行：强化 → 进阶 → 确定 ×10 轮。
+#
+# 动作说明：
+#   for_each_coord 遍历 6 个技能坐标；
+#   sub_steps 第一个 abort_check 检查是否满级；
+#   内层 repeat 中嵌入异步 abort_check 监听满级；
+#   find_click 用于「等进阶出现并点击」，optional=true 未出现则跳过。
+# ============================================
+loop_count: 1
+
+steps:
+  - action: for_each_coord
+    remark: "对技能 1~6 依次执行：强化 → 进阶 → 确定 ×10 轮"
+    click_wait: 0.5
+    coords_list:
+      - [294, 895]
+      - [540, 895]
+      - [798, 911]
+      - [289, 1106]
+      - [548, 1117]
+      - [832, 1093]
+
+    steps:
+      - action: abort_check
+        remark: "检查技能是否已满级"
+        abort_text:
+          mode: mixed
+          rules:
+            - type: must
+              keywords: ["最高等级"]
+        on_match: break_outer
+        on_miss: next
+        retry: 1
+        retry_interval: 0.3
+
+      - action: repeat
+        times: 10
+        steps:
+          - action: abort_check
+            remark: "异步监听是否已满级（命中只打断本 repeat）"
+            async: true
+            abort_text:
+              mode: mixed
+              rules:
+                - type: must
+                  keywords: ["最高等级"]
+            on_match: break_outer
+            retry_interval: 0.3
+
+          - action: click
+            remark: "一键强化"
+            target: coords
+            coords: [356, 2288]
+            times: 1
+            sleep: 0.5
+
+          - action: find_click
+            remark: "等进阶出现并点击（可选，未出现则直接跳过）"
+            text: "进阶"
+            exact: false
+            coords: [540, 2277]
+            region_size: 300
+            retry: 4
+            retry_interval: 0.2
+            optional: true
+
+          - action: click
+            remark: "确定进阶成功"
+            target: coords
+            coords: [542, 1700]
+            times: 1
+            sleep: 0.1

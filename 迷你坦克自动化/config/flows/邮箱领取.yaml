@@ -1,0 +1,27 @@
+loop_count: 500
+
+steps:
+#  - action: find_click
+  - action: click
+    remark: "点击第一个邮件"
+    text: "GM邮件"
+    target: coords
+    coords: [542, 517]
+    times: 1
+    sleep: 0.3
+
+  - action: click
+    remark: "领取"
+    text: "领取"
+    target: coords
+    coords: [ 555, 2171 ]
+    times: 1
+    sleep: 0.3
+
+  - action: click
+    remark: "删除邮箱"
+    text: "领取"
+    target: coords
+    coords: [ 843, 2317 ]
+    times: 1
+    sleep: 0.3

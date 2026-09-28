@@ -1,0 +1,76 @@
+# ============================================
+# 流程：将领技能升级
+#
+# 全部通过 run_method 调用方法：
+#   ① run_method   → scan_general_skills   扫描，产出 data 写文件
+#   ② repeat ×100
+#       ③ run_method   → get_click_target    读文件，判断+能点就点技能坐标
+#       ④ click        升级（左）
+#       ⑤ click        升级（右）
+#       ⑥ run_method   → update_click_count  更新已点次数
+# ============================================
+loop_count: 1
+
+steps:
+  # ---------- ① 初始化数据 ----------
+  - action: run_method
+    remark: "扫描将领技能等级，写入数据文件"
+    method: scan_general_skills
+    store: data
+    params:
+      general_coord: [ 482, 320 ]
+      general_region_w: 300
+      general_region_h: 120
+      anchor_coords:
+#        - [ 389, 1328 ]
+#        - [ 895, 1313 ]
+#        - [ 375, 1500 ]
+#        - [ 893, 1495 ]
+        - [ 226, 1344 ]
+        - [ 743, 1344 ]
+        - [ 228, 1530 ]
+        - [ 743, 1530 ]
+      pattern: "[Ll][Vv]\\.?\\s*(\\d+)\\s*/\\s*(\\d+)"
+      region_w: 300
+      region_h: 300
+      default_times: 0
+      value_per_unit: 1
+      debug: true
+      file: "data/general_plan.json"
+
+  # ---------- ② 固定循环 100 轮 ----------
+  - action: repeat
+    remark: "固定循环 100 轮"
+    times: 100
+    steps:
+      # ---------- ③ 读数据，判断 + 能点就点技能坐标 ----------
+      - action: run_method
+        remark: "读数据判断当前该点的坐标，能点就点"
+        method: get_click_target
+        store: current_target
+        params:
+          file: "data/general_plan.json"
+          anchor_wait: 0.5
+
+      # ---------- ④ 升级（左） ----------
+      - action: click
+        remark: "升级（左）"
+        target: coords
+        coords: [538, 1761]
+        times: 2
+        interval: 0.2
+
+      # ---------- ⑤ 升级（右） ----------
+      - action: click
+        remark: "升级（右）"
+        target: coords
+        coords: [762, 1761]
+        times: 2
+        interval: 0.2
+
+      # ---------- ⑥ 更新已点次数 ----------
+      - action: run_method
+        remark: "记录本次点击，更新数据"
+        method: update_click_count
+        params:
+          file: "data/general_plan.json"

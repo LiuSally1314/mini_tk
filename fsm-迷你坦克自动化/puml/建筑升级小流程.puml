@@ -1,0 +1,46 @@
+@startuml
+title 建筑升级小流程 - 状态机（修正版）
+
+skinparam state {
+  BackgroundColor #F8F8F8
+  BorderColor #333333
+  ArrowColor #333333
+}
+
+[*] --> building_main : 初始化
+
+state "building_main" as building_main {
+  building_main : 主界面：点「升级」
+  building_main : find_text_coord("升级")
+  building_main : click_coord(x, y)
+}
+
+building_main --> upgrade_popup : tri_open_upgrade\nafter: click_upgrade_button
+
+state "upgrade_popup" as upgrade_popup {
+  upgrade_popup : 弹窗：循环点同位置
+  upgrade_popup : 同位置 = 免费加速 / 军团协助 / 加速
+  upgrade_popup : 独立位置 = 确定（单独 OCR）
+}
+
+note right of upgrade_popup
+  弹窗循环：
+  1. 出现 "120" -> 结束
+  2. 同位置 OCR：
+     - 免费加速 -> 点 -> 结束
+     - 军团协助 -> 点 -> 继续
+     - 加速     -> 点 -> 继续
+  3. 若出现「确定」-> 点 -> 结束
+end note
+
+upgrade_popup --> upgrade_popup : tri_popup_step\nunless: check_finish_keyword\nafter: click_same_slot_button
+
+upgrade_popup --> finished : tri_finish\nconditions: check_finish_keyword\nafter: on_finished
+
+state "finished" as finished {
+  finished : 流程结束
+}
+
+finished --> [*]
+
+@enduml

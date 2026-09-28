@@ -1,0 +1,53 @@
+@startuml
+skinparam state {
+    BackgroundColor White
+    BorderColor #2B579A
+    ArrowColor #2B579A
+    FontName Microsoft YaHei
+}
+skinparam NoteFontName Microsoft YaHei
+
+[*] --> GENERAL_MANAGEMENT : 1. 程序启动，进入主界面
+
+' ---------------- 状态节点定义 ----------------
+state "【主界面】\nGENERAL_MANAGEMENT" as GENERAL_MANAGEMENT
+state "【技能升级弹窗】\nSKILL_UPGRADE" as SKILL_UPGRADE
+state "【流程结束】\nFINISHED" as FINISHED
+
+' ---------------- 备注说明 ----------------
+note right of GENERAL_MANAGEMENT
+  <b>主界面状态职责：</b>
+  • <b>静态区域识别 / 状态校验</b>（不触发点击）
+  • check_and_seek_next_need_upgrade_skill():
+    - 循环推进 current_index，跳过已满级技能
+    - 找到未满级技能返回 True，全部满级返回 False
+    - <i>注意：此方法有副作用，会修改 current_index</i>
+  • 首次进入时已完成 _init_skills_data() 截图 OCR
+end note
+
+note right of SKILL_UPGRADE
+  <b>升级弹窗状态职责：</b>
+  • 通过线程池提交点击动作，点击【升级】按钮
+  • 累加当前技能 current_clicks，并累计进入次数
+  • 若本次升级后技能刚好满级，current_index += 1
+  • 升级完成后返回主界面
+end note
+
+note right of FINISHED
+  <b>清理与总结：</b>
+  • on_finished(): 打印总结信息（after 回调中执行）
+  • teardown(): 由 main.py 的 finally 调用，销毁线程池
+  • 主循环检测到 state == 'finished' 后退出
+end note
+
+' ---------------- 状态转移路线 ----------------
+
+GENERAL_MANAGEMENT --> SKILL_UPGRADE : <b>触发条件 (Trigger):</b> tri_enter_upgrade\n--------------------------------------\n<b>【前置条件 conditions】:</b>\n• check_and_seek_next_need_upgrade_skill == True\n  (推进 current_index 定位到下一个未满级技能)\n--------------------------------------\n<b>【后置执行动作 after (顺序执行)】:</b>\n1. calculate_skill_coords\n   (按 calc_once 开关填充技能图标坐标队列)\n2. click_skill_icon_from_pool\n   (线程池提交 → 点击当前技能图标 → 等待弹窗)\n3. calculate_upgrade_button_coord\n   (按技能前 recalc_times 次强制 OCR，之后复用缓存)
+
+SKILL_UPGRADE --> GENERAL_MANAGEMENT : <b>触发条件 (Trigger):</b> tri_back_to_management\n--------------------------------------\n<b>【后置执行动作 after】:</b>\n• click_upgrade_button_from_pool\n  ├─ 分支 A：当前技能已满级\n  │   → current_index += 1，直接返回主界面\n  └─ 分支 B：仍需升级\n      1) 若 _upgrade_btn_coord 为空则先重算\n      2) 线程池提交 → 点击【升级】按钮\n      3) current_clicks += 1\n      4) _upgrade_btn_click_count += 1\n      5) 若本次后技能满级 → current_index += 1\n      6) 返回主界面
+
+GENERAL_MANAGEMENT --> FINISHED : <b>触发条件 (Trigger):</b> tri_finish\n--------------------------------------\n<b>【反向条件 unless】:</b>\n• check_and_seek_next_need_upgrade_skill == False\n  (current_index 已越过所有技能，即全部满级)\n--------------------------------------\n<b>【后置执行动作 after】:</b>\n• on_finished()\n  (打印"将领技能升级流程全部结束")
+
+FINISHED --> [*] : 2. 主循环退出，teardown 回收线程池\n   main.py finally 中 device.disconnect()
+
+@enduml

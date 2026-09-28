@@ -1,0 +1,131 @@
+# =========================================================
+# 将领技能升级流程 - 有限状态机 (FSM) 配置
+# =========================================================
+#
+# 【整体流程说明】
+#
+#   ┌─────────────────────┐
+#   │  general_management │  (主界面：将领管理页，能看到各技能 LV.x/y)
+#   └──────────┬──────────┘
+#              │  tri_enter_upgrade
+#              │  (条件：还存在未升满的技能)
+#              ▼
+#   ┌─────────────────────┐
+#   │    skill_upgrade    │  (技能升级弹窗：有「升级」按钮)
+#   └──────────┬──────────┘
+#              │  tri_back_to_management
+#              │  (点完升级按钮后自动返回主界面)
+#              ▼
+#   ┌─────────────────────┐
+#   │  general_management │  (回到主界面，循环处理下一个技能)
+#   └──────────┬──────────┘
+#              │  tri_finish
+#              │  (条件：所有技能都已升满)
+#              ▼
+#   ┌─────────────────────┐
+#   │      finished       │  (流程结束)
+#   └─────────────────────┘
+#
+# 【一次完整循环的执行顺序（按 after 回调展开）】
+#
+#   general_management 状态：
+#     ├─ calculate_skill_coords        : 把各技能图标坐标填进队列（只算一次）
+#     ├─ click_skill_icon_from_pool    : 点击当前技能图标 → 进入技能升级弹窗
+#     └─ calculate_upgrade_button_coord: 在弹窗上 OCR 找「升级」按钮坐标
+#
+#   skill_upgrade 状态：
+#     └─ click_upgrade_button_from_pool: 点击「升级」按钮，技能进度 +1，
+#                                        然后返回主界面
+#
+# =========================================================
+
+flow_name: "general_skill_upgrade"
+
+
+# ---------------------------------------------------------
+# 状态列表
+# ---------------------------------------------------------
+# general_management : 主界面（将领管理页），用于定位技能图标、读取技能等级
+# skill_upgrade      : 技能升级弹窗页，用于点击「升级」按钮
+# finished           : 终止状态，主循环 while self.state != 'finished' 会退出
+# ---------------------------------------------------------
+states:
+  - "general_management"
+  - "skill_upgrade"
+  - "finished"
+
+
+# ---------------------------------------------------------
+# 初始状态
+# ---------------------------------------------------------
+# 流程实例化后，self.state 即为该值
+# ---------------------------------------------------------
+initial: "general_management"
+
+
+# ---------------------------------------------------------
+# 状态转换规则 (Transitions)
+# ---------------------------------------------------------
+# 每条规则包含：
+#   trigger    : 触发方法名，代码中通过 self.tri_xxx() 调用
+#   source     : 源状态（必须处于该状态才能触发）
+#   dest       : 目标状态
+#   conditions : 触发前置条件（返回 True 才允许转换）
+#   unless     : 触发前置条件（返回 False 才允许转换，与 conditions 相反）
+#   after      : 转换完成后依次执行的回调方法列表
+# ---------------------------------------------------------
+transitions:
+
+  # -------------------------------------------------------
+  # 【转换 1】主界面 → 技能升级弹窗
+  # -------------------------------------------------------
+  # 触发时机：在主界面发现还有技能没升满时
+  # 条件    ：check_and_seek_next_need_upgrade_skill() 返回 True
+  #           → 会顺带跳过已升满的技能，把 current_index 定位到待升级技能
+  # 执行动作：
+  #   1) calculate_skill_coords        : 计算所有技能图标坐标（默认只算一次）
+  #   2) click_skill_icon_from_pool    : 点击当前技能图标，打开升级弹窗
+  #   3) calculate_upgrade_button_coord: 在弹窗上 OCR「升级」按钮坐标
+  #                                      （按技能前 N 次强制重算，之后复用缓存）
+  # -------------------------------------------------------
+  - trigger: "tri_enter_upgrade"
+    source: "general_management"
+    dest: "skill_upgrade"
+    conditions: "check_and_seek_next_need_upgrade_skill"
+    after:
+      - "calculate_skill_coords"
+      - "click_skill_icon_from_pool"
+      - "calculate_upgrade_button_coord"
+
+  # -------------------------------------------------------
+  # 【转换 2】技能升级弹窗 → 主界面
+  # -------------------------------------------------------
+  # 触发时机：在升级弹窗页完成一次点击（或判断无需点击）后
+  # 执行动作：
+  #   click_upgrade_button_from_pool :
+  #     - 若当前技能已升满 → 直接 current_index += 1，返回主界面
+  #     - 否则点击缓存的「升级」按钮，技能进度 +1
+  #     - 点击成功后 _upgrade_btn_click_count += 1（用于下次判断是否重算坐标）
+  #     - 若本次点击后技能刚好升满 → current_index += 1
+  # -------------------------------------------------------
+  - trigger: "tri_back_to_management"
+    source: "skill_upgrade"
+    dest: "general_management"
+    after:
+      - "click_upgrade_button_from_pool"
+
+  # -------------------------------------------------------
+  # 【转换 3】主界面 → 结束
+  # -------------------------------------------------------
+  # 触发时机：在主界面确认所有技能都已升满时
+  # 条件    ：check_and_seek_next_need_upgrade_skill() 返回 False
+  #           （即 current_index 已越过所有技能）
+  # 执行动作：
+  #   on_finished : 打印总结信息，主循环检测到 finished 后退出
+  # -------------------------------------------------------
+  - trigger: "tri_finish"
+    source: "general_management"
+    dest: "finished"
+    unless: "check_and_seek_next_need_upgrade_skill"
+    after:
+      - "on_finished"

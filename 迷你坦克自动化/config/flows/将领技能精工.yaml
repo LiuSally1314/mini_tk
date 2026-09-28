@@ -1,0 +1,75 @@
+# ============================================
+# 流程：将领技能精工
+#
+# 对技能 1~6 依次执行：精工 → 确定 ×7 轮。
+#
+# 动作说明：
+#   for_each_coord 遍历 6 个技能坐标；
+#   sub_steps 第一个 abort_check 用于判断该技能是否已满级：
+#       命中「最高等级」→ break_outer（跳到下一个技能）
+#       未命中        → next（继续精工流程）
+#   内层 repeat 中嵌入异步 abort_check：
+#       命中「最高等级」或「没出现确定」→ break_outer
+#       consume_at: outer_end，等到当前坐标项结束再消费
+# ============================================
+loop_count: 1
+
+steps:
+  - action: for_each_coord
+    remark: "对技能 1~6 依次执行：精工 → 确定 ×7 轮"
+    click_wait: 0.5
+    coords_list:
+      - [294, 895]
+      - [540, 895]
+      - [798, 911]
+      - [289, 1106]
+      - [548, 1117]
+      - [832, 1093]
+
+    steps:
+      # ① 技能开头：出现最高等级 → 跳到下一个技能
+      - action: abort_check
+        remark: "检查技能是否已满级"
+        abort_text:
+          mode: mixed
+          rules:
+            - type: must
+              keywords: ["最高等级"]
+        on_match: break_outer
+        on_miss: next
+        retry: 1
+        retry_interval: 0.3
+        not_confirm_count: 2
+
+      # ② 7 轮精工
+      - action: repeat
+        times: 7
+        steps:
+          - action: click
+            remark: "精工"
+            target: coords
+            coords: [849, 2282]
+            times: 1
+            sleep: 0.5
+
+          - action: abort_check
+            remark: "出现最高等级 或 没出现确定 → 打断本 repeat"
+            async: true
+            abort_text:
+              mode: mixed
+              match_mode: any
+              rules:
+                - type: must
+                  keywords: ["最高等级"]
+                - type: not
+                  keywords: ["确定"]
+            on_match: break_outer
+            consume_at: outer_end
+            retry_interval: 0.3
+
+          - action: click
+            remark: "确定"
+            target: coords
+            coords: [500, 1682]
+            times: 1
+            sleep: 0.5

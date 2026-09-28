@@ -1,0 +1,144 @@
+# ============================================
+# 流程：将领升级（1→40→50→60 + 两次突破 + 一次授勋）
+#
+# 全部为固定坐标点击，text 仅作日志说明。
+# 注意：原文件 YAML 缩进有误（steps 前多了 4 个空格），此处已修正。
+# ============================================
+loop_count: 1
+
+steps:
+  - action: click
+    remark: "进入升级 1->40"
+    text: "升级"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "升级 1->40"
+    text: "升39级"
+    target: coords
+    coords: [858, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "确认升满 40 级"
+    text: "确定"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "进入第一次突破"
+    text: "突破"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "确认第一次突破"
+    text: "突破"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "进入升级 30->50"
+    text: "升级"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "升级 30->50"
+    text: "升20级"
+    target: coords
+    coords: [858, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "确认升满 20 级"
+    text: "确定"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "进入第二次突破"
+    text: "突破"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "确认第二次突破"
+    text: "突破"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "进入升级 40->60"
+    text: "升级"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "升级 40->60"
+    text: "升20级"
+    target: coords
+    coords: [858, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "确认升满 20 级"
+    text: "确定"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "进入第一次授勋"
+    text: "授勋"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "领取第一次授勋"
+    text: "领取"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "完成第一次授勋"
+    text: "一键完成"
+    target: coords
+    coords: [239, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "确认完成第一次授勋"
+    text: "确定"
+    target: coords
+    coords: [183, 1526]
+    times: 1
+    sleep: 0.5

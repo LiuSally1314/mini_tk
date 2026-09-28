@@ -1,0 +1,41 @@
+# =========================================================
+# 统一配置：环境层与流程选择
+# =========================================================
+
+# 当前要运行的流程名称 (对应注册名)
+#active_flow: "general_skill_upgrade"
+active_flow: "building_upgrade"
+
+# 页面配置文件路径
+pages_yaml: "pages.yaml"
+
+# 设备配置
+device:
+  uri: "Android:///192.168.31.33:39771"
+
+# 时序参数（秒）
+timings:
+  # ---- 将领技能升级 ----
+  click_skill_icon: 0.1
+  after_click_icon: 1.2
+  click_upgrade_button: 0.1
+  after_upgrade: 0.5
+  before_snapshot: 0.3
+  loop_interval: 0.1
+
+  # ---- 建筑升级 ----
+  click_same_slot: 0.5
+  after_confirm: 0.5
+
+# 调试开关
+debug: true
+
+# ---------------------------------------------------------
+# 每个流程独立的配置（FSM 路径等）
+# ---------------------------------------------------------
+flows:
+  general_skill_upgrade:
+    fsm_yaml: "flows_config/general_skill_upgrade_fsm.yaml"
+
+  building_upgrade:
+    fsm_yaml: "flows_config/building_upgrade_fsm.yaml"

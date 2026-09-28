@@ -1,0 +1,49 @@
+# ============================================
+# 流程：将领技能升级
+#
+# 动作说明：
+#   for_each_coord 遍历 skill_coords 中的每个坐标，
+#     每个坐标点击后进入升级弹窗，内部循环 times 次执行 steps。
+#
+# 字段说明：
+#   coords_list    要遍历的坐标列表
+#   times          每个坐标项的内部循环次数
+#   interval       每轮循环之间的间隔（秒）
+#   click_wait     点击坐标后的等待（秒）
+#   steps          子步骤列表
+# ============================================
+loop_count: 1
+
+steps:
+  - action: for_each_coord
+    remark: "对4个技能依次升级，每个技能循环25次"
+    coords_list:
+      - [389, 1328]
+      - [895, 1313]
+      - [375, 1500]
+      - [893, 1495]
+    click_wait: 0.5
+    times: 25
+    interval: 0.3
+    close_popup_before_next: false
+
+    steps:
+      - action: click
+        remark: "点技能框"
+        target: last
+        times: 1
+        sleep: 0.3
+
+      - action: click
+        remark: "升级（左）"
+        target: coords
+        coords: [531, 1775]
+        times: 2
+        interval: 0.2
+
+      - action: click
+        remark: "升级（右）"
+        target: coords
+        coords: [770, 1764]
+        times: 2
+        interval: 0.2

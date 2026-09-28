@@ -1,0 +1,87 @@
+# ============================================
+# 流程：将领第二次升级（领悟 + 50→70 + 二次授勋）
+#
+# 全部为固定坐标点击，text 仅作日志说明。
+# ============================================
+loop_count: 1
+
+steps:
+  - action: click
+    remark: "进入第一个领悟"
+    text: "第一个领悟图片"
+    target: coords
+    coords: [362, 1888]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "领悟 ×60"
+    text: "领悟"
+    target: coords
+    coords: [772, 2282]
+    times: 60
+    interval: 0.2
+
+  - action: click
+    remark: "领悟第一个技能"
+    text: "替换"
+    target: coords
+    coords: [254, 1791]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "确定领悟第一个技能"
+    text: "确定"
+    target: coords
+    coords: [283, 1528]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "退出领悟页面"
+    text: "X"
+    target: coords
+    coords: [1013, 206]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "进入升级 50->70"
+    text: "升级"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "升 20 级"
+    text: "升20级"
+    target: coords
+    coords: [858, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "确认升满 20 级"
+    text: "确定"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "进入第二次授勋"
+    text: "授勋"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5
+
+  - action: click
+    remark: "领取第二次授勋"
+    text: "领取"
+    target: coords
+    coords: [553, 2257]
+    times: 1
+    sleep: 0.5

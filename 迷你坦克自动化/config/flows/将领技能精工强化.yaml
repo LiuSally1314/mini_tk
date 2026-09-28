@@ -1,0 +1,41 @@
+# ============================================
+# 流程：将领技能精工强化（组合流程）
+#
+# 顺序执行：
+#   1. 进入「强化」页 → 调用「将领技能强化」流程
+#   2. 进入「精工」页 → 调用「将领技能精工」流程
+#
+# 动作说明：
+#   call_flow 调用子流程；
+#   before / after 分别为子流程的前置 / 后置动作。
+# ============================================
+loop_count: 1
+
+steps:
+  - action: call_flow
+    flow: 将领技能强化
+    before:
+      - action: click
+        remark: "进入技能强化"
+        text: "强化"
+        target: coords
+        coords: [278, 355]
+        times: 1
+        sleep: 0.5
+    after:
+      - action: wait
+        seconds: 1.0
+
+  - action: call_flow
+    flow: 将领技能精工
+    before:
+      - action: click
+        remark: "进入技能精工"
+        text: "精工"
+        target: coords
+        coords: [779, 355]
+        times: 1
+        sleep: 0.5
+    after:
+      - action: wait
+        seconds: 1.0

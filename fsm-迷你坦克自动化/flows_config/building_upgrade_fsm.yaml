@@ -1,0 +1,51 @@
+# =========================================================
+# 建筑升级 - 小流程 FSM (重构版)
+# =========================================================
+#
+# 流程说明：
+#   1. 升级页面：OCR 识别当前等级与升级按钮坐标
+#      - 若出现 "120" → finished
+#      - 否则 → 连续点击升级按钮 4 次 → 进入确认页面
+#   2. 确认页面：OCR 识别确认按钮坐标
+#      - 记录标识（有/无）
+#      - 根据标识决定是否点击确认按钮 1 次
+#      - 返回升级页面循环
+# =========================================================
+
+flow_name: "building_upgrade"
+
+states:
+  - "upgrade_page"      # 升级页面：识别 + 连续点击升级按钮
+  - "confirm_page"      # 确认页面：识别 + 点击确认按钮
+  - "finished"          # 结束
+
+initial: "upgrade_page"
+
+transitions:
+
+  # 升级页面 -> 结束：出现 "120"
+  - trigger: "tri_finish"
+    source: "upgrade_page"
+    dest: "finished"
+    conditions: "check_finish_keyword"
+    after:
+      - "on_finished"
+
+  # 升级页面 -> 确认页面：没有 "120"，点击升级按钮后进入确认页
+  - trigger: "tri_check_upgrade"
+    source: "upgrade_page"
+    dest: "confirm_page"
+    unless: "check_finish_keyword"
+    before:
+      - "prepare_upgrade_page"       # OCR 识别当前等级 + 升级按钮坐标
+    after:
+      - "click_upgrade_four_times"   # 连续点击升级按钮 4 次
+
+  # 确认页面 -> 升级页面：处理完确认按钮后回到升级页
+  - trigger: "tri_back_to_upgrade"
+    source: "confirm_page"
+    dest: "upgrade_page"
+    before:
+      - "prepare_confirm_page"       # OCR 识别确认按钮坐标，记录标识
+    after:
+      - "click_confirm_if_needed"    # 根据标识点击确认按钮

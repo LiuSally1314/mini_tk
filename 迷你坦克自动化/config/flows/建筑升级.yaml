@@ -1,0 +1,38 @@
+# ============================================
+# 流程：建筑升级
+#
+# 动作说明：
+#   find_click 查找并点击文本；
+#   expect_text 支持三种写法：
+#     1. 字符串      "建造"
+#     2. 列表        ["建造", "研究", "升级"]   → OR
+#     3. 规则字典    {mode: "and/or/mixed", ...}
+# ============================================
+loop_count: 100
+
+steps:
+  # 写法一：简单字符串
+  - action: find_click
+    text: "升级"
+    expect_text: "建造"
+    times: 2
+    interval: 0.5
+    sleep: 0.5
+
+  # 写法二：可选词（OR 模式，出现任一即可）
+  - action: find_click
+    text: "加速"
+    expect_text:
+      mode: or
+      keywords: ["建造", "研究", "升级"]
+    times: 1
+    sleep: 0.5
+
+  # 写法三：必选词（AND 模式，全部出现）
+  - action: find_click
+    text: "确定"
+    expect_text:
+      mode: and
+      keywords: ["建造"]
+    times: 1
+    sleep: 0.5

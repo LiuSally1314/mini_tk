@@ -1,0 +1,58 @@
+# =========================================================
+# 页面及 OCR 参数配置 (按流程模块划分)
+# =========================================================
+
+pages:
+  # ---------------------------------------------------------
+  # 流程一：将领技能升级流程 (general_skill_upgrade)
+  # ---------------------------------------------------------
+  general_skill_upgrade:
+    general_management:
+      page_name: "general_management"
+      confirm_keyword:
+        mode: "must"
+        keywords: ["将领管理"]
+      calc_once: true
+
+      ocr:
+        lv_pattern: "[Ll][Vv]\\.?\\s*(\\d+)\\s*/\\s*(\\d+)"
+        icon_offset: 60
+        row_tol_mode: "auto"
+        row_tol_manual: 0
+
+    skill_upgrade:
+      page_name: "skill_upgrade"
+      confirm_keyword:
+        mode: "must"
+        keywords: ["技能升级"]
+      auto_return: true
+
+      ocr:
+        button_text: "升级"
+        button_match_mode: "exact"   # exact / contains / regex
+        button_y_band: null
+        recalc_times: 2
+
+  # ---------------------------------------------------------
+  # 流程三：建筑升级流程 (building_upgrade)
+  # ---------------------------------------------------------
+  building_upgrade:
+    upgrade_page:
+      page_name: "upgrade_page"
+      confirm_keyword:
+        mode: "must"
+        keywords: [ "建造", "LV" ]
+
+      upgrade_text: "升级"
+      upgrade_match_mode: "exact"    # exact / contains / regex
+      finish_keyword: "120"
+      level_pattern: "[Ll][Vv]\\.?\\s*(\\d+)"
+
+    confirm_page:
+      page_name: "confirm_page"
+      confirm_keyword:
+        mode: "must"
+        keywords: [ "建造", "LV" ]
+
+      confirm_text: "确定"
+      confirm_match_mode: "exact"    # exact / contains / regex

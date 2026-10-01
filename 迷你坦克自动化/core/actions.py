@@ -375,6 +375,43 @@ class ActionRunner:
         self._do_sleep(step)
         return True
 
+    def do_click(self, step: dict) -> bool:
+        if self._get_confirm_config(step) is not None:
+            if not self._check_page(step):
+                return False
+
+        target = step.get("target", "last")
+        if target in ("last", "skill"):
+            if not self.last_coord:
+                if step.get("optional"):
+                    print("  ⚠️ click 无可用坐标，但配置了 optional=true，跳过点击继续下一步")
+                    return True
+                print("  ❌ click 无可用坐标（未先 find）")
+                return False
+            coord = self.last_coord
+        else:
+            coord = tuple(step["coords"])
+
+        # ---------- 坐标偏移（offset_x / offset_y）处理 ----------
+        offset_x = float(step.get("offset_x", 0))
+        offset_y = float(step.get("offset_y", 0))
+        if offset_x != 0 or offset_y != 0:
+            coord = (coord[0] + offset_x, coord[1] + offset_y)
+            print(f"  🎯 应用坐标偏移 (offset_x={offset_x}, offset_y={offset_y}) → 最终坐标: ({coord[0]:.0f}, {coord[1]:.0f})")
+
+        times = step.get("times", 1)
+        interval = step.get("interval", self.defaults.get("interval", 0.5))
+
+        for i in range(times):
+            self._check_async_abort_hit(phase="step")
+            self.dm.touch(coord)
+            if i < times - 1:
+                time.sleep(interval)
+        print(f"  ✅ 点击 ({coord[0]:.0f},{coord[1]:.0f}) ×{times}")
+
+        self._do_sleep(step)
+        return True
+
     def do_find_click(self, step: dict) -> bool:
         name = step.get("name")          # 可选，唯一标识
         use_cache = bool(name)

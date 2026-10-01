@@ -1,0 +1,29 @@
+重置金额
+
+curl --url 'http://124.220.207.172/gm/user/query.php' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: zh-CN,zh;q=0.9,en;q=0.8' \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+  -b 'PHPSESSID=aiq1md4mhnmpqb4ci1bt01dtf3' \
+  -H 'Origin: http://124.220.207.172' \
+  -H 'Proxy-Connection: keep-alive' \
+  -H 'Referer: http://124.220.207.172/gm/' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  --data-raw 'type=charge&uid=%E7%88%B1%E8%8E%89%E5%B8%8C%E9%9B%85%E3%80%81&chargenum=1&qu=1&pwd=69' \
+  --insecure
+
+
+
+curl --url 'http://124.220.207.172/gm/user/query.php' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: zh-CN,zh;q=0.9,en;q=0.8' \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+  -b 'PHPSESSID=aiq1md4mhnmpqb4ci1bt01dtf3' \
+  -H 'Origin: http://124.220.207.172' \
+  -H 'Proxy-Connection: keep-alive' \
+  -H 'Referer: http://124.220.207.172/gm/' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  --data-raw $'type=daoju&uid=%E7%88%B1%E8%8E%89%E5%B8%8C%E9%9B%85%E3%80%81&item=props_p1&num=11&qu=1&pwd=69&title=GM%E9%82%AE%E4%BB%B6&content=%E4%BA%B2%E7%88%B1%E7%9A%84%E7%8E%A9%E5%AE%B6%EF%BC%8C%E8%AF%B7%E6%9F%A5%E6%94%B6%E6%82%A8%E7%9A%84%E9%82%AE%E4%BB%B6\u0021' \
+  --insecure

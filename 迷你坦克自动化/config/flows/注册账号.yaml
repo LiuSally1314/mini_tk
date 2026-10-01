@@ -1,14 +1,21 @@
-loop_count: 200
+loop_count: 1
 
 steps:
 
+  - action: find_click
+    name: "快速注册"
+    text: "快速注册"
+    times: 1
+    sleep: 1
+
   - action: run_method
-    remark: "升级建筑前，保存建筑升级信息"
-    method: save_upgrade_building_info
+    remark: "输入注册信息"
+    method: input_reg_account_info
     params:
       file:
-        data/upgrade_building_info.json
+        data/reg_account.json
     enabled: true
+
 
   # 第一步：点升级
   - action: find_click

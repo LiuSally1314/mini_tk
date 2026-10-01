@@ -2,37 +2,18 @@
 # 动作执行模块（通用）
 #
 # 通用 action 列表：
-#   click              点击坐标（target=last 用上次 find 结果；target=coords 用本步 coords）
+#   click              点击坐标
 #   find               OCR 查找文本并记录坐标
 #   find_click         查找并点击（支持 name + cache_ttl 坐标缓存）
 #   wait               纯等待
 #   wait_text          等待文本出现
 #   dump_ocr           打印当前页面 OCR 内容（调试）
 #   repeat             次数循环
-#   for_each_coord     遍历坐标列表 + 每项内部循环 + 子步骤
-#   poll_click         反复点击同一坐标，直到 expect_text 消失或出现
+#   for_each_coord     遍历坐标列表
+#   poll_click         反复点击同一坐标
 #   abort_check        条件检查 / 终止
 #   call_flow          调用子流程
-#   run_method         调用 ActionRunner 上的任意方法，结果存入 _action_data
-#
-# 通用字段：
-#   text               目标文本
-#   expect_text        期望出现的页面关键词（替代 page_keyword / confirm_keyword）
-#   coords             坐标 [x, y]
-#   coords_list        坐标列表 [[x,y], ...]
-#   times              次数
-#   interval           通用间隔（点击 / 循环）
-#   retry              OCR 重试次数
-#   retry_interval     重试间隔
-#   exact              是否精确匹配
-#   sleep              步骤后休眠
-#   optional           找不到时是否跳过
-#   enabled            是否启用
-#   remark             日志说明
-#
-# 坐标缓存（仅 find_click 生效）：
-#   name               唯一标识，填写后启用缓存；不填则每次 OCR
-#   cache_ttl          缓存过期时间（秒），覆盖 defaults.cache_ttl
+#   run_method         调用方法（优先查 core/flows/ 注册表，再回退自身方法）
 # ============================================
 
 import json
@@ -46,6 +27,9 @@ from core.device import DeviceManager
 from core.ocr_finder import OcrFinder
 from core.keyword_matcher import check_keywords_match
 from core.abort_checker import AbortChecker, SkillAbort, LoopBreak
+from core.flows import (
+    register_all, bind_all, get_method, get_owner, list_methods,
+)
 
 
 class UserExit(Exception):
@@ -81,6 +65,10 @@ class ActionRunner:
         self._coord_cache: Dict[str, Dict[str, float]] = {}
         self._coord_cache_file = COORD_CACHE_FILE
         self._load_coord_cache()
+
+        # ---------- 注册流程专用方法 ----------
+        register_all()
+        bind_all(self)
 
     # ---------- 坐标缓存（文件） ----------
     def _load_coord_cache(self):
@@ -245,6 +233,11 @@ class ActionRunner:
         has_page = "page" in targets
         has_query = "query" in targets
 
+        def _fmt_target(t):
+            if isinstance(t, (list, tuple)):
+                return " / ".join(str(x) for x in t)
+            return str(t)
+
         for i in range(retry):
             self._check_global_abort()
             self._check_async_abort_hit(phase="step")
@@ -258,9 +251,9 @@ class ActionRunner:
                 return found["query"] if has_query else found["page"]
 
             if not page_ok:
-                print(f"  🔁 期望文本「{targets['page']}」未出现，{interval}s 后重试...")
+                print(f"  🔁 期望文本「{_fmt_target(targets['page'])}」未出现，{interval}s 后重试...")
             elif not query_ok:
-                print(f"  🔁 目标「{targets['query']}」未找到，{interval}s 后重试...")
+                print(f"  🔁 目标「{_fmt_target(targets['query'])}」未找到，{interval}s 后重试...")
 
             if i < retry - 1:
                 time.sleep(interval)
@@ -515,24 +508,11 @@ class ActionRunner:
         return True
 
     def do_for_each_coord(self, step: dict) -> bool:
-        """
-        遍历坐标列表：
-          - coords_list:   坐标列表 [[x,y], ...]
-          - times:         每个坐标项内部的循环次数（默认 1）
-          - steps:         子步骤列表
-          - interval:      每个坐标项点击后的等待
-        """
         coords_list = step.get("coords_list") or step.get("skill_coords") or []
         sub_steps = step.get("steps") or step.get("sub_steps") or []
         inner_times = step.get("times") or step.get("loop_times") or 1
-        click_wait = step.get(
-            "click_wait",
-            self.defaults.get("interval", 0.5)
-        )
-        loop_interval = step.get(
-            "interval",
-            self.defaults.get("interval", 0.5)
-        )
+        click_wait = step.get("click_wait", self.defaults.get("interval", 0.5))
+        loop_interval = step.get("interval", self.defaults.get("interval", 0.5))
         close_between = step.get("close_popup_before_next", False)
 
         if not coords_list:
@@ -649,12 +629,6 @@ class ActionRunner:
         return all_ok
 
     def do_poll_click(self, step: dict) -> bool:
-        """
-        反复点击同一坐标，直到：
-          - expect_text 消失（消失即完成）
-          - 或达到 max_times
-        用于「点升级按钮直到升级页面关闭」这类场景。
-        """
         from core.poll_clicker import PollClicker
 
         clicker = PollClicker(
@@ -687,7 +661,9 @@ class ActionRunner:
     # ---------- run_method 通用分发 ----------
     def do_run_method(self, step: dict) -> bool:
         """
-        调用 ActionRunner 上的任意方法，把返回值存到 self._action_data[store]。
+        调用方法：
+          1) 优先查 core/flows/ 注册表（流程专用方法）
+          2) 回退到 ActionRunner 自身方法
 
         重要：LoopBreak / SkillAbort 直接向上抛，交给 repeat / for_each_coord 处理。
         """
@@ -696,9 +672,18 @@ class ActionRunner:
             print("  ❌ run_method 缺少 method")
             return False
 
-        method = getattr(self, method_name, None)
+        # 1) 优先查流程方法注册表
+        method = get_method(method_name)
+        source = f"flows::{get_owner(method_name)}" if method else None
+
+        # 2) 回退到 ActionRunner 自身方法
+        if method is None:
+            method = getattr(self, method_name, None)
+            source = "ActionRunner"
+
         if not callable(method):
             print(f"  ❌ run_method 未找到可调用方法: {method_name}")
+            print(f"     已注册流程方法: {sorted(list_methods().keys())}")
             return False
 
         store = step.get("store")
@@ -707,7 +692,7 @@ class ActionRunner:
             print(f"  ❌ run_method params 必须是 dict，实际: {type(params)}")
             return False
 
-        print(f"  🔧 调用方法 self.{method_name}")
+        print(f"  🔧 调用 {source}.{method_name}")
         try:
             result = method(**params)
         except (LoopBreak, SkillAbort):
@@ -727,8 +712,9 @@ class ActionRunner:
                 size = "?"
             print(f"  💾 结果已存到「{store}」（{size} 项）")
         else:
-            print("  ⚠️ run_method 未配置 store，结果丢弃")
-
+            # save_/write_/update_ 类方法靠副作用，返回值常被忽略，不提示
+            if not method_name.startswith(("save_", "write_", "update_")):
+                print("  ℹ️ run_method 未配置 store，返回值未保留")
         return True
 
     # ---------- 将领技能：扫描并写文件 ----------
@@ -744,13 +730,6 @@ class ActionRunner:
                             general_coord: Optional[List] = None,
                             general_region_w: float = 300,
                             general_region_h: float = 120) -> List[dict]:
-        """
-        整页 OCR → 用 pattern 抓 (当前, 目标) → 每个锚点在周边矩形内找最近的
-        → 计算 need = ceil((tgt - cur) / value_per_unit)
-        → 若提供 general_coord，在其周边矩形内识别将领名称
-        → 写入 JSON 文件（含 current_general / skills / cursor）
-        → 返回 skills 列表
-        """
         try:
             rx = re.compile(pattern)
         except re.error as e:
@@ -762,7 +741,6 @@ class ActionRunner:
             print("  ❌ scan_general_skills: OCR 失败")
             return []
 
-        # ---------- 识别将领名称 ----------
         current_general = "unknown"
         if general_coord:
             try:
@@ -786,7 +764,6 @@ class ActionRunner:
             except Exception as e:
                 print(f"  ⚠️ 将领名称识别失败: {e}")
 
-        # ---------- 收集所有 LV.x/y 命中 ----------
         hits: List[Tuple[float, float, int, int, str]] = []
         for box, text, _score in page_data:
             text_str = str(text).strip()
@@ -809,7 +786,6 @@ class ActionRunner:
         hw = float(region_w) / 2.0
         hh = float(region_h) / 2.0
 
-        # ---------- 对每个锚点匹配最近的 LV ----------
         skills: List[dict] = []
         for anchor in anchor_coords:
             try:
@@ -855,7 +831,6 @@ class ActionRunner:
             else:
                 print(f"  📊 锚点@({ax:.0f},{ay:.0f}) 未匹配 → 兜底 {need} 次")
 
-        # ---------- 写文件 ----------
         data = {
             "current_general": current_general,
             "skills": skills,
@@ -875,12 +850,6 @@ class ActionRunner:
     def get_click_target(self,
                          file: str = "data/general_plan.json",
                          anchor_wait: float = 0.5) -> Optional[Tuple[float, float]]:
-        """
-        读 JSON：
-          1. 从 cursor 开始找第一个 done < need 的项
-          2. 如果全部 done >= need → 抛 LoopBreak，跳出 repeat
-          3. 否则：点该坐标 → 等 anchor_wait → 返回坐标
-        """
         if not os.path.exists(file):
             print(f"  ❌ get_click_target: 数据文件不存在 {file}")
             return None
@@ -901,7 +870,6 @@ class ActionRunner:
                 break
 
         if target is None:
-            # 再看一遍前面（万一前面还有没点完的）
             for i in range(0, cursor):
                 s = skills[i]
                 if s.get("done", 0) < s.get("need", 0):
@@ -933,10 +901,6 @@ class ActionRunner:
     # ---------- 将领技能：更新已点次数 ----------
     def update_click_count(self,
                            file: str = "data/general_plan.json") -> bool:
-        """
-        读 JSON → 当前 cursor 项的 done += 1 → 写回。
-        （cursor 推进由 get_click_target 负责）
-        """
         if not os.path.exists(file):
             print(f"  ❌ update_click_count: 数据文件不存在 {file}")
             return False
@@ -1052,7 +1016,7 @@ class ActionRunner:
         elif name:
             print(f"  📝 [name] {name}")
 
-        # ---------- before（call_flow 由自身 handler 消费，这里跳过）----------
+        # ---------- before ----------
         before_steps = step.get("before") or []
         if before_steps and action != "call_flow":
             print(f"  ⏩ [before] 前置动作 ×{len(before_steps)}")

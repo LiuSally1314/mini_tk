@@ -109,28 +109,28 @@ class OcrFinder:
 
         return None
 
-    def find_texts(self, dm: DeviceManager, targets: Dict[str, str],
-                   exact: bool = True,
-                   region: Optional[Tuple[float, float, float, float]] = None
-                   ) -> Dict[str, Optional[Tuple[float, float]]]:
-        """
-        一次截图同时查找多个目标。
-        注意：同一个 OCR 框可同时命中多个 alias（例如 page 与 query 同词），
-        此时返回的坐标是同一个框的中心。
-        """
-        found: Dict[str, Optional[Tuple[float, float]]] = {k: None for k in targets}
-
+    def find_texts(self, dm, targets, exact=True, region=None):
+        found = {k: None for k in targets}
         result = self._snapshot_and_ocr(dm)
         if not result:
             return found
+
+        def _match_one(text_str: str, target) -> bool:
+            # ← 这里新增：支持 list（OR 语义）
+            if isinstance(target, (list, tuple)):
+                if exact:
+                    return any(text_str == t for t in target)
+                return any(t in text_str for t in target)
+            if exact:
+                return text_str == target
+            return target in text_str
 
         for box, text, score in result:
             text_str = str(text).strip()
             for alias, target_text in targets.items():
                 if found[alias] is not None:
                     continue
-                is_match = (text_str == target_text) if exact else (target_text in text_str)
-                if not is_match:
+                if not _match_one(text_str, target_text):  # ← 改用 _match_one
                     continue
 
                 center_x, center_y = self._box_center(box)

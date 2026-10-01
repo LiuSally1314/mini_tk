@@ -13,7 +13,7 @@
 
 device:
   uri: "Android:///192.168.31.33:46747"
-#  uri: "Android:///192.168.31.102:45951"
+#  uri: "Android:///192.168.31.102:41943"
 
 output:
   json_filename: "ocr_result.json"

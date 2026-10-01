@@ -8,7 +8,7 @@ steps:
     target: coords
     coords: [542, 517]
     times: 1
-    sleep: 0.3
+    sleep: 1
 
   - action: click
     remark: "领取"
@@ -16,7 +16,7 @@ steps:
     target: coords
     coords: [ 555, 2171 ]
     times: 1
-    sleep: 0.3
+    sleep: 1
 
   - action: click
     remark: "删除邮箱"
@@ -24,4 +24,4 @@ steps:
     target: coords
     coords: [ 843, 2317 ]
     times: 1
-    sleep: 0.3
+    sleep: 1

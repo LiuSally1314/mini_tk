@@ -12,7 +12,8 @@
 # ============================================
 
 device:
-  uri: "Android:///192.168.31.33:44415"
+  uri: "Android:///192.168.31.33:46747"
+#  uri: "Android:///192.168.31.102:45951"
 
 output:
   json_filename: "ocr_result.json"
@@ -27,6 +28,7 @@ output:
 #   exact            文本匹配是否精确匹配（true=完全相等）
 #   sleep            每个步骤执行后的休眠（秒）
 #   enabled          步骤是否启用
+#   cache_ttl        坐标缓存过期时间（秒），默认 5 分钟
 # ------------------------------------------------------------
 defaults:
   retry: 3
@@ -35,10 +37,16 @@ defaults:
   exact: true
   sleep: 0.1
   enabled: true
+  cache_ttl: 300
 
 # 当前激活的流程名（对应 config/flows/<name>.yaml）
-active_flow: "邮箱领取"
+#active_flow: "训练有素"
+#active_flow: "邮箱领取"
+active_flow: "建筑升级"
 #active_flow: "将领技能升级"
+#active_flow: "迷你坦克-坦克嘉年华"
+#active_flow: "迷你坦克-配件嘉年华"
+#active_flow: "迷你坦克-名将培养计划"
 
 # 流程目录
 flows_dir: "config/flows"

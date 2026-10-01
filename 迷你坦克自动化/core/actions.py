@@ -4,7 +4,7 @@
 # 通用 action 列表：
 #   click              点击坐标（target=last 用上次 find 结果；target=coords 用本步 coords）
 #   find               OCR 查找文本并记录坐标
-#   find_click         查找并点击
+#   find_click         查找并点击（支持 name + cache_ttl 坐标缓存）
 #   wait               纯等待
 #   wait_text          等待文本出现
 #   dump_ocr           打印当前页面 OCR 内容（调试）
@@ -29,6 +29,10 @@
 #   optional           找不到时是否跳过
 #   enabled            是否启用
 #   remark             日志说明
+#
+# 坐标缓存（仅 find_click 生效）：
+#   name               唯一标识，填写后启用缓存；不填则每次 OCR
+#   cache_ttl          缓存过期时间（秒），覆盖 defaults.cache_ttl
 # ============================================
 
 import json
@@ -47,6 +51,10 @@ from core.abort_checker import AbortChecker, SkillAbort, LoopBreak
 class UserExit(Exception):
     """用户选择退出"""
     pass
+
+
+# 坐标缓存文件路径（运行期配置，启动时清空）
+COORD_CACHE_FILE = "data/coord_cache.json"
 
 
 class ActionRunner:
@@ -68,6 +76,86 @@ class ActionRunner:
 
         # 跨 action 数据存储（run_method 写，后续 action 读）
         self._action_data: Dict[str, Any] = {}
+
+        # 坐标缓存：name -> {"x": float, "y": float, "ts": float}
+        self._coord_cache: Dict[str, Dict[str, float]] = {}
+        self._coord_cache_file = COORD_CACHE_FILE
+        self._load_coord_cache()
+
+    # ---------- 坐标缓存（文件） ----------
+    def _load_coord_cache(self):
+        """启动时从文件加载坐标缓存"""
+        if not os.path.exists(self._coord_cache_file):
+            self._coord_cache = {}
+            return
+        try:
+            with open(self._coord_cache_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                self._coord_cache = data
+                print(f"  💾 已加载坐标缓存: {len(self._coord_cache)} 条")
+            else:
+                print(f"  ⚠️ 坐标缓存文件格式异常，忽略: {type(data)}")
+                self._coord_cache = {}
+        except Exception as e:
+            print(f"  ⚠️ 坐标缓存加载失败: {e}")
+            self._coord_cache = {}
+
+    def _save_coord_cache(self):
+        """写回坐标缓存文件"""
+        try:
+            os.makedirs(os.path.dirname(self._coord_cache_file) or ".", exist_ok=True)
+            with open(self._coord_cache_file, "w", encoding="utf-8") as f:
+                json.dump(self._coord_cache, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"  ⚠️ 坐标缓存写入失败: {e}")
+
+    def _get_cache_ttl(self, step: dict) -> float:
+        """取 cache_ttl，step 覆盖 defaults，单位秒"""
+        value = step.get("cache_ttl", self.defaults.get("cache_ttl", 300))
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            print(f"  ⚠️ cache_ttl 非法: {value!r}，回退默认 300s")
+            return 300.0
+
+    def _get_cached_coord(self, name: str, ttl: float
+                          ) -> Optional[Tuple[float, float]]:
+        """命中且未过期则返回坐标，否则返回 None 并清理过期项"""
+        entry = self._coord_cache.get(name)
+        if not entry:
+            return None
+
+        try:
+            x = float(entry["x"])
+            y = float(entry["y"])
+            ts = float(entry["ts"])
+        except (KeyError, TypeError, ValueError):
+            print(f"  ⚠️ 坐标缓存条目损坏「{name}」，删除并重新 OCR")
+            del self._coord_cache[name]
+            self._save_coord_cache()
+            return None
+
+        age = time.time() - ts
+        if age >= ttl:
+            print(f"  ⏰ 坐标缓存过期「{name}」"
+                  f"（已 {age:.1f}s / TTL {ttl:.0f}s），重新 OCR")
+            del self._coord_cache[name]
+            self._save_coord_cache()
+            return None
+
+        print(f"  💾 坐标缓存命中「{name}」→ ({x:.0f}, {y:.0f})"
+              f"（{age:.1f}s / TTL {ttl:.0f}s）")
+        return x, y
+
+    def _store_cached_coord(self, name: str, coord: Tuple[float, float]):
+        self._coord_cache[name] = {
+            "x": float(coord[0]),
+            "y": float(coord[1]),
+            "ts": time.time(),
+        }
+        self._save_coord_cache()
+        print(f"  💾 已缓存「{name}」→ ({coord[0]:.0f}, {coord[1]:.0f})")
 
     # ---------- 全局终止监听 ----------
     def set_global_abort(self, keywords, exact: bool = False):
@@ -295,8 +383,27 @@ class ActionRunner:
         return True
 
     def do_find_click(self, step: dict) -> bool:
+        name = step.get("name")          # 可选，唯一标识
+        use_cache = bool(name)
+
+        # ---------- 缓存命中：跳过 find，直接点击 ----------
+        if use_cache:
+            ttl = self._get_cache_ttl(step)
+            cached = self._get_cached_coord(name, ttl)
+            if cached is not None:
+                self.last_coord = cached
+                click_step = dict(step)
+                click_step["target"] = "last"
+                click_step["optional"] = step.get("optional", False)
+                return self.do_click(click_step)
+
+        # ---------- 原有逻辑：OCR 查找 ----------
         if not self.do_find(step):
             return False
+
+        # ---------- 查找成功：写缓存 ----------
+        if use_cache and self.last_coord:
+            self._store_cached_coord(name, self.last_coord)
 
         if step.get("target") == "coords":
             return self.do_click(step)
@@ -936,11 +1043,14 @@ class ActionRunner:
 
         remark = step.get("remark")
         text = step.get("text")
+        name = step.get("name")
 
         if remark:
             print(f"  📝 {remark}")
         elif text:
             print(f"  📝 [text] {text}")
+        elif name:
+            print(f"  📝 [name] {name}")
 
         # ---------- before（call_flow 由自身 handler 消费，这里跳过）----------
         before_steps = step.get("before") or []

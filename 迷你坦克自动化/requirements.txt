@@ -1,0 +1,18 @@
+# 设备自动化
+airtest==1.3.3
+pocoui==1.0.94
+
+# OCR 引擎
+rapidocr_onnxruntime==1.3.24
+
+# 配置解析
+PyYAML==6.0.1
+
+# 以下为 rapidocr_onnxruntime 的依赖，通常自动安装，显式锁定避免版本漂移
+onnxruntime==1.17.1
+opencv-python==4.9.0.80
+numpy==1.26.4
+Pillow==10.2.0
+pyclipper==1.3.0.post5
+shapely==2.0.3
+six==1.16.0

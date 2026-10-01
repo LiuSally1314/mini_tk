@@ -12,8 +12,8 @@
 # ============================================
 
 device:
-  uri: "Android:///192.168.31.33:46747"
-#  uri: "Android:///192.168.31.102:41943"
+#  uri: "Android:///192.168.31.33:46747"
+  uri: "Android:///192.168.31.102:41943"
 
 output:
   json_filename: "ocr_result.json"
@@ -42,7 +42,7 @@ defaults:
 # 当前激活的流程名（对应 config/flows/<name>.yaml）
 #active_flow: "训练有素"
 #active_flow: "邮箱领取"
-active_flow: "建筑升级"
+active_flow: "坦克生产信息获取"
 #active_flow: "将领技能升级"
 #active_flow: "迷你坦克-坦克嘉年华"
 #active_flow: "迷你坦克-配件嘉年华"

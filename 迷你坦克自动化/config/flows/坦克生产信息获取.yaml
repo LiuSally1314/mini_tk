@@ -1,0 +1,40 @@
+loop_count: 200
+
+steps:
+
+
+  - action: find_click
+    name: "折叠位置01"
+    text: "轻型坦克"
+    times: 1
+    sleep: 1
+    cache_ttl: 30000
+
+  - action: run_method
+    remark: "保存坦克资源需求信息"
+    method: save_tank_resource_info
+    params:
+      file:
+        data/save_tank_resource_info.json
+    enabled: false
+
+  - action: find_click
+    name: "折叠位置01"
+    text: "轻型坦克"
+    times: 1
+    sleep: 1
+    cache_ttl: 30000
+
+  - action: find_click
+    name: "折叠位置02"
+    text: "轻型歼击车"
+    times: 1
+    sleep: 1
+    cache_ttl: 30000
+
+  - action: find_click
+    name: "折叠位置01"
+    text: "轻型坦克"
+    times: 1
+    sleep: 1
+    cache_ttl: 30000

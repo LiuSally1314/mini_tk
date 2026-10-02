@@ -1,7 +1,7 @@
 # config.yaml
 device:
-  uri: "Android:///192.168.31.33:37765"   # 设备连接 ID
-#  uri: "Android:///192.168.31.102:41943"   # 设备连接 ID
+#  uri: "Android:///192.168.31.33:37765"   # 设备连接 ID
+  uri: "Android:///192.168.31.102:37563"   # 设备连接 ID
 
 output:
   json_filename: "ocr_result.json"        # 保存的 JSON 文件名

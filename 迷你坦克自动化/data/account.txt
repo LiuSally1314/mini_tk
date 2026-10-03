@@ -1,0 +1,11 @@
+id,username,role_name,password,real_name,id_card,registered_at,created_at,account_status,can_activate,role_name_backup
+1,tu000,无法无天,tu000ut,车俊杰,410901199709191000,,0,0,,
+
+ID,账号,角色名称,密码,身份证姓名,身份证号码,注册时间,创建时间,账号状态码,是否可激活
+账号状态码
+    没有注册 0
+    已注册 1
+    已创建 2
+    已激活 3
+是否可激活
+   创建角色时间是否满10分钟

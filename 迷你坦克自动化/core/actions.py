@@ -347,12 +347,33 @@ class ActionRunner:
         times = step.get("times", 1)
         interval = step.get("interval", self.defaults.get("interval", 0.5))
 
+        # ---------- 长按属性（默认关闭） ----------
+        long_press = bool(step.get("long_press", False))
+        long_press_duration = int(step.get("long_press_duration", 1500))
+
         for i in range(times):
             self._check_async_abort_hit(phase="step")
-            self.dm.touch(coord)
+
+            if long_press:
+                # ADB 长按：起止坐标相同 + 持续时长（毫秒）
+                x = int(round(coord[0]))
+                y = int(round(coord[1]))
+                self.dm.adb_shell([
+                    "input", "swipe",
+                    str(x), str(y), str(x), str(y),
+                    str(long_press_duration),
+                ])
+            else:
+                self.dm.touch(coord)
+
             if i < times - 1:
                 time.sleep(interval)
-        print(f"  ✅ 点击 ({coord[0]:.0f},{coord[1]:.0f}) ×{times}")
+
+        if long_press:
+            print(f"  ✅ 长按 ({coord[0]:.0f},{coord[1]:.0f}) ×{times} "
+                  f"（{long_press_duration}ms）")
+        else:
+            print(f"  ✅ 点击 ({coord[0]:.0f},{coord[1]:.0f}) ×{times}")
 
         self._do_sleep(step)
         return True

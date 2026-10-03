@@ -1,46 +1,62 @@
 loop_count: 500
 
 steps:
+
+  - action: run_method
+    remark: "发送一个邮件"
+    method: send_one_email
+    enabled: true
+    sleep: 1
+
   - action: find_click
     name: "点击第一个邮件"
     remark: "点击第一个邮件"
     text: "GM邮件"
     index: 0
-    cache_ttl: 6000
+    cache_ttl: 6000000
     times: 1
     sleep: 1
 
-  - action: find_click
-    remark: "点击物品信息"
-    name: "领取"
-    offset_y: -180
-    text: "领取"
-    cache_ttl: 6000
-    times: 1
-    sleep: 1
+#  - action: find_click
+#    remark: "点击物品信息"
+#    name: "领取"
+#    long_press: true
+#    long_press_duration: 200
+#    offset_y: -180
+#    text: "领取"
+#    cache_ttl: 60000
+#    times: 1
+#    sleep: 0.5
 
-  - action: run_method
-    remark: "保存邮件信息信息"
-    method: save_email_info
-    params:
-      file:
-        data/save_email_info.csv
-    enabled: true
+#  - action: run_method
+#    remark: "保存邮件信息信息"
+#    method: save_email_info
+#    params:
+#      file:
+#        data/save_email_info.csv
+#    enabled: true
+#    sleep: 1
 
 
   - action: find_click
     remark: "领取"
     name: "领取"
     text: "领取"
-    cache_ttl: 6000
+    cache_ttl: 600000
     times: 2
     interval: 0.5
+    long_press: true
+    long_press_duration: 200
     sleep: 1
 
   - action: click
     remark: "删除邮箱"
-    text: "领取"
+    text: "删除"
     target: coords
     coords: [ 843, 2317 ]
     times: 1
+    long_press: true
+    long_press_duration: 200
     sleep: 1
+
+

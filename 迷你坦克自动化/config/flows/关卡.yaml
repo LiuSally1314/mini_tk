@@ -1,0 +1,60 @@
+loop_count: 1
+
+steps:
+  - action: for_each_coord
+    remark: "16个关卡"
+    click_wait: 1
+    coords_list:
+      - [ 181, 880 ]
+      - [ 420, 880 ]
+      - [ 659, 880 ]
+      - [ 898, 880 ]
+
+      - [ 181, 1235 ]
+      - [ 420, 1235 ]
+      - [ 659, 1235 ]
+      - [ 898, 1235 ]
+
+      - [ 181, 1590 ]
+      - [ 420, 1590 ]
+      - [ 659, 1590 ]
+      - [ 898, 1590 ]
+
+      - [ 181, 1946 ]
+      - [ 420, 1946 ]
+      - [ 659, 1946 ]
+      - [ 898, 1946 ]
+
+    steps:
+      - action: click
+        remark: "进攻"
+        target: coords
+        coords: [ 763, 2222 ]
+        times: 2
+        interval: 0.2
+        sleep: 6
+
+      - action: click
+        remark: "跳过战斗"
+        target: coords
+        coords: [ 763, 2222 ]
+        times: 2
+        interval: 0.2
+        sleep: 2
+
+
+      - action: click
+        remark: "关闭"
+        target: coords
+        coords: [ 763, 2222 ]
+        times: 2
+        interval: 0.2
+        sleep: 2
+
+      - action: click
+        remark: "防止未关闭"
+        target: coords
+        coords: [ 763, 2222 ]
+        times: 2
+        interval: 0.5
+        sleep: 1

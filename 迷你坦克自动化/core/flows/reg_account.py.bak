@@ -1,0 +1,38 @@
+
+
+import json
+import os
+import re
+from typing import Dict, Optional
+
+from .base import FlowMethods
+
+
+
+class BuildingFlow(FlowMethods):
+
+    def input_reg_account_info(
+        self,
+        params: {},
+        debug: bool = False,
+    ) -> Optional[dict]:
+    # 第一步 解析params
+    # 第二步 读取文件
+    # 第三步 根据指定输入框坐标的位置，填充信息
+    # 第四步 默认为注册成功，更新注册时间,账号状态码设置为1
+    # 第五步 先当前线程中,存储id数据到内存中，供后续使用，程序退出后就清除改id
+
+    def input_name(
+        self,
+        params: {},
+        debug: bool = False,):
+
+        # 第一步 读取内存中的id
+        # 第二步 解析params
+        # 第三步 读取文件的id所在行的role_name
+        # 第四步 默认为创建成功,更新创建时间，账号状态码设置为2
+        # 第五步 将内存中的id清空
+
+
+
+

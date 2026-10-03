@@ -13,37 +13,309 @@ steps:
     method: input_reg_account_info
     params:
       file:
-        data/reg_account.json
+        data/account.csv
+      username: [743,735]
+      password: [725,960]
+      name: [690,1108]
+      idcard: [683,1228]
     enabled: true
 
-
-  # 第一步：点升级
   - action: find_click
-    name: "升级按钮"
-    text: "升级"
+    text: "立即注册"
+    times: 1
+    sleep: 20
+
+  - action: click
+    text: "跳过战斗"
+    coords: [989,1991]
+    times: 3
+    interval: 0.2
+    sleep: 1
+
+
+  - action: click
+    remark: "关闭引导"
+    coords: [1033,908]
     times: 1
     sleep: 1
 
-  # 第二步：点加速（免费加速 / 加速，同位置，OR 匹配）
   - action: find_click
-    name: "加速按钮"
-    text: ["免费加速", "加速"]
+    name: "关闭提示，进入游戏"
+    text: "确定"
     times: 1
     sleep: 1
 
   - action: run_method
-    remark: "升级建筑前，获取升级时间信息"
-    method: save_upgrade_building_time_info
+    remark: "输入角色名称"
+    method: input_name
     params:
       file:
-        data/upgrade_building_info.json
+        data/reg_account.json
+      #输入框
+      coords: [542,1722]
     enabled: true
 
-  # 第三步：点确定（免费时没有，找不到就跳过）
   - action: find_click
-    name: "确定按钮"
-    text: "确定"
-    optional: true
-    retry: 1
-    retry_interval: 0.2
+    remark: "创建角色"
+    name: "创建"
+    text: "创建"
+    times: 1
     sleep: 1
+
+  - action: click
+    name: "确定"
+    remark: "确定援兵"
+    coords: [542,1495]
+    times: 2
+    interval: 0.5
+    sleep: 1
+
+  - action: click
+    remark: "点击关卡"
+    coords: [285,2004]
+    times: 1
+    sleep: 1
+
+  - action: click
+    remark: "点击第一章"
+    coords: [245,640]
+
+
+  - action: click
+    remark: "点击第一关"
+    coords: [170,866 ]
+
+  - action: find_click
+    remark: "最大战斗力"
+    text: "最大战斗力"
+
+  - action: find_click
+    remark: "进攻"
+    text: "最大战斗力"
+
+
+  - action: click
+    remark: "关闭"
+    coords: [ ]
+
+  - action: click
+    remark: "点击第二关"
+    coords: [ ]
+
+  - action: click
+    remark: "进攻"
+    coords: [ ]
+
+
+  - action: click
+    remark: "关闭"
+    coords: [ ]
+
+  - action: click
+    remark: "退出第一章"
+    coords: [ ]
+
+  #关卡关闭
+  - action: click
+    remark: "退出关卡"
+    coords: [ ]
+
+
+
+  - action: click
+    remark: "点击基地"
+    coords: [ ]
+  ##郊外建筑开始
+  - action: click
+    remark: "点击第一个地皮"
+    coords: [ ]
+
+  - action: click
+    remark: "选择铁矿"
+    coords: [ ]
+
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+  - action: click
+    remark: "点击第二个地皮"
+    coords: [ ]
+
+  - action: click
+    remark: "选择石油"
+    coords: [ ]
+
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+  - action: click
+    remark: "点击第三个地皮"
+    coords: [ ]
+
+  - action: click
+    remark: "选择石油"
+    coords: [ ]
+
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+  - action: click
+    remark: "点击第四个地皮"
+    coords: [ ]
+
+  - action: click
+    remark: "选择铅矿"
+    coords: [ ]
+
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+  - action: click
+    remark: "点击第五个地皮"
+    coords: [ ]
+
+  - action: click
+    remark: "选择铅矿"
+    coords: [ ]
+  ##郊外建筑完成
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+  - action: click
+    remark: "点击任务按钮"
+    coords: [ ]
+
+
+  - action: click
+    remark: "进入主线任务，完成坦克工厂建造"
+    coords: [ ]
+
+  - action: click
+    remark: "点击建造坦克工厂"
+    coords: [ ]
+
+  - action: click
+    remark: "点击生产"
+    coords: [ ]
+
+
+  - action: click
+    remark: "点击轻型坦克，展开"
+    coords: [ ]
+
+  - action: click
+    remark: "点击到10，点击17次"
+    coords: [ ]
+
+  - action: click
+    remark: "点击生产"
+    coords: [ ]
+
+
+  - action: click
+    remark: "关闭坦克工厂"
+    coords: [ ]
+
+  - action: click
+    remark: "点击任务按钮"
+    coords: [ ]
+
+  - action: click
+    remark: "点击主线任务完成，点击五次"
+    coords: [ ]
+
+  - action: click
+    remark: "点击日常任务"
+    coords: [ ]
+
+  - action: click
+    remark: "点击第一次，点击三次"
+    coords: [ ]
+
+  - action: click
+    remark: "点击第一个活跃宝箱"
+    coords: [ ]
+
+  - action: click
+    remark: "点击任务"
+    coords: [ ]
+
+  - action: click
+    remark: "点击主线任务，进入指挥中心"
+    coords: [ ]
+
+#    1->2
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+#    2->3
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+  #    3->4
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+  #    4->5
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+
+  - action: click
+    remark: "点击军团图标"
+    coords: [ ]
+
+  - action: click
+    remark: "点击加入军团"
+    coords: [ ]
+
+  - action: click
+    remark: "点击搜索"
+    coords: [ ]
+
+  - action: click
+    remark: "点击输入框"
+    coords: [ ]
+
+  - action: input
+    remark: "输入文字"
+    coords: [ ]
+
+  - action: click
+    remark: "点击搜索"
+    coords: [ ]
+
+
+  - action: click
+    remark: "点击申请"
+    coords: [ ]
+
+  - action: click
+    remark: "点击领取"
+    coords: [ ]
+
+  - action: click
+    remark: "点击建造"
+    coords: [ ]
+
+
+  - action: swip
+    remark: "划屏到设置"
+    coords: [ ]
+
+  - action: click
+    remark: "点击更换账号"
+    coords: [ ]
+
